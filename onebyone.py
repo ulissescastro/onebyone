@@ -125,7 +125,7 @@ def cve_search(all_items_cve, cve_id):
 
 def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
     report = open('./report.txt', 'w')
-    host_info = carrier_parser(sorted_findings')
+    host_info = carrier_parser(sorted_findings)
     total = len(host_info)
     remaining = 0
     for vuln_code, info in host_info.iteritems():
