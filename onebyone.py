@@ -106,6 +106,7 @@ def carrier_parser(csv_file):
 
 def check_port(host, port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket.setdefaulttimeout(3.0)
     try:
         sock.connect((host, int(port)))
         return True
@@ -142,8 +143,6 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
             output += "CVSS: %s%s%s%s%s\n" % (b.BOLD, b.FAIL, info['cvss_score'], b.ENDC, b.ENDC)
             output += "NAME: %s%s%s\n" % (b.WARNING, info['vuln_name'], b.ENDC)
             output += "HOSTS: %s\n" % hosts
-            # output += "SERVICES: %s\n" % services
-
             cve_list = info['cve_list']
             if len(cve_list) >= 3:
                 cve_list = random.sample(info['cve_list'], 3)
@@ -180,7 +179,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
 
             os.system('clear')
             print output
-            status = raw_input('vulnerable? [y/n] > ')
+            status = raw_input('vulnerable? [y/N] > ')
             if status == 'y':
                 for host in info['hosts_list']:
                     txt = '%s %s\n' % (vuln_code, host)
