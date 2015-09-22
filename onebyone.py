@@ -43,12 +43,10 @@ def cve_parser(allitems_csv_file):
     cve_info = {}
 
     reader = csv.reader(open(allitems_csv_file, 'rb'))
+    for x in xrange(10): next(reader) # Skip headers (10 lines)
+
     for row in reader:
-        # skip top 10 headers
         # "Name","Status","Description","References","Phase","Votes","Comments"
-        if counter < 10:
-            counter += 1
-            continue
 
         cve = row[0]
         if not cve_info.has_key(cve):
@@ -75,13 +73,9 @@ def carrier_parser(csv_file):
     host_info = {}
 
     reader = csv.reader(open(csv_file, 'rb'))
+    next(reader) # Skip reader
     for row in reader:
-        # skip headers
         # Priority,Risk,Tags,Notes,IP,Protocol,Port,Service Protocol,Vuln Code,Vuln Name,CVSS Score,CVE,Version Based,Evidence
-        if counter == 0:
-            counter += 1
-            continue
-
         vuln_code = str(row[8])
 
         if not host_info.has_key(vuln_code):
@@ -198,4 +192,3 @@ if __name__ == '__main__':
     # Set default cvss_treshold to 5
     cvss_treshold = sys.argv[2] if len(sys.argv) > 2 else 5
     manual_check_helper(all_items_cve, sys.argv[1], cvss_treshold)
-
