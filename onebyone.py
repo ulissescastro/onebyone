@@ -41,7 +41,7 @@ def cve_parser(allitems_csv_file):
     # http://cve.mitre.org/data/downloads/allitems.csv
     counter = 0
     cve_info = {}
-    
+
     reader = csv.reader(open(allitems_csv_file, 'rb'))
     for row in reader:
         # skip top 10 headers
@@ -49,19 +49,19 @@ def cve_parser(allitems_csv_file):
         if counter < 10:
             counter += 1
             continue
-        
+
         cve = row[0]
         if not cve_info.has_key(cve):
             cve_info[cve] = {}
 
-        
+
         cve_info[cve]['status'] = row[1]
         cve_info[cve]['description'] = row[2]
         # get 5 sample references
         pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
         cve_info[cve]['references'] = re.findall(pattern, row[3])
         if len(cve_info[cve]['references']) > 5:
-            cve_info[cve]['references'] = random.sample(cve_info[cve]['references'], 5) 
+            cve_info[cve]['references'] = random.sample(cve_info[cve]['references'], 5)
 
         cve_info[cve]['phase'] = row[4]
         cve_info[cve]['votes'] = row[5]
@@ -73,7 +73,7 @@ def cve_parser(allitems_csv_file):
 def carrier_parser(csv_file):
     counter = 0
     host_info = {}
-    
+
     reader = csv.reader(open(csv_file, 'rb'))
     for row in reader:
         # skip headers
@@ -81,7 +81,7 @@ def carrier_parser(csv_file):
         if counter == 0:
             counter += 1
             continue
-        
+
         vuln_code = str(row[8])
 
         if not host_info.has_key(vuln_code):
@@ -146,7 +146,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
             cve_list = info['cve_list']
             if len(cve_list) >= 3:
                 cve_list = random.sample(info['cve_list'], 3)
-            
+
             for cve in cve_list:
                 output += "CVE: %s%s%s\n" % (b.WARNING, cve, b.ENDC)
                 description, references = cve_search(all_items_cve, cve)
@@ -162,7 +162,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
                             output += "\t[%sOK%s] %s:%s\n" % (b.OKGREEN, b.ENDC, host, port)
                         else:
                             output += "\t[%sFAIL%s] %s:%s\n" % (b.FAIL, b.ENDC, host, port)
-            
+
             if info['evidence']:
                 output += "\nEVIDENCE(s):\n%s\n" % info['evidence'].replace('; ', '\n')
 
@@ -183,7 +183,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
             if status == 'y':
                 for host in info['hosts_list']:
                     txt = '%s %s\n' % (vuln_code, host)
-                    report.write(txt)                
+                    report.write(txt)
 
             os.system('clear')
             remaining -= 1
