@@ -8,6 +8,7 @@ import subprocess, shlex
 import time
 import random
 from pprint import pprint
+from collections import OrderedDict
 
 
 class b:
@@ -68,7 +69,7 @@ def cve_parser(allitems_csv_file):
 
 
 def carrier_parser(csv_file, mst=False):
-    host_info = {}
+    host_info = OrderedDict()
 
     reader = csv.reader(open(csv_file, 'rb'))
     next(reader) # Skip reader
@@ -109,7 +110,6 @@ def carrier_parser(csv_file, mst=False):
             host_info[vuln_code]['vuln_name'] = str(row[6])
             host_info[vuln_code]['cvss_score'] = 5.0
             host_info[vuln_code]['cve_list'] = ''
-            #import ipdb; ipdb.set_trace() # Debug Here!
             host_info[vuln_code]['version_based'] = True if 'version-based' in host_info[vuln_code]['tags_list'] else False
             host_info[vuln_code]['evidence'] = str(row[9])
             host_info[vuln_code]['notes_list'].append(row[8])
@@ -142,6 +142,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False
     host_info = carrier_parser(sorted_findings, mst)
     total = len(host_info)
     remaining = 0
+    #import ipdb; ipdb.set_trace() # Debug Here!
     for vuln_code, info in host_info.iteritems():
         if info['cvss_score'] >= float(cvss_treshold):
             remaining += 1
@@ -152,6 +153,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False
             services = list_to_str(str(info['service_list']))
             output = "REMAINING: %s%s/%s%s    " % (b.BOLD, remaining, total, b.ENDC)
             output += "CODE: %s%s%s   " % (b.BOLD, vuln_code, b.ENDC)
+            output += "PRIO: %s%s%s   " % (b.BOLD, info['priority'], b.ENDC)
             output += "VERSION BASED: %s%s%s    " % (b.BOLD, info['version_based'], b.ENDC)
             output += "CVSS: %s%s%s%s%s\n" % (b.BOLD, b.FAIL, info['cvss_score'], b.ENDC, b.ENDC)
             output += "NAME: %s%s%s\n" % (b.WARNING, info['vuln_name'], b.ENDC)
