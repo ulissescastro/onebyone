@@ -39,7 +39,6 @@ def list_to_str(str_list):
 def cve_parser(allitems_csv_file):
     # download from
     # http://cve.mitre.org/data/downloads/allitems.csv
-    counter = 0
     cve_info = {}
 
     reader = csv.reader(open(allitems_csv_file, 'rb'))
@@ -68,15 +67,21 @@ def cve_parser(allitems_csv_file):
     return cve_info
 
 
-def carrier_parser(csv_file):
-    counter = 0
+def carrier_parser(csv_file, mst=False):
     host_info = {}
 
     reader = csv.reader(open(csv_file, 'rb'))
     next(reader) # Skip reader
     for row in reader:
+        # Skip empty lines
+        if len(row) == 0:
+            continue
+
         # Priority,Risk,Tags,Notes,IP,Protocol,Port,Service Protocol,Vuln Code,Vuln Name,CVSS Score,CVE,Version Based,Evidence
-        vuln_code = str(row[8])
+        # Priority,Risk,Tags,Notes,ID,Risk,Name,Location,Description,Evidence    # MST
+
+        if not mst: vuln_code = str(row[8])
+        else: vuln_code = str(row[4])
 
         if not host_info.has_key(vuln_code):
             host_info[vuln_code] = {}
@@ -85,15 +90,29 @@ def carrier_parser(csv_file):
         host_info[vuln_code]['risk'] = int(row[1])
         host_info[vuln_code]['tags_list'] = str(row[2]).strip().split()
         host_info[vuln_code]['notes_list'] = str(row[3]).strip().split()
-        host_info[vuln_code]['hosts_list'] = str(row[4]).replace(' ', '').split(',')
-        host_info[vuln_code]['protocol_list'] = str(row[5]).replace(' ', '').split(',')
-        host_info[vuln_code]['port_list'] = str(row[6]).replace(' ', '').split(',')
-        host_info[vuln_code]['service_list'] = str(row[7]).strip().split()
-        host_info[vuln_code]['vuln_name'] = str(row[9])
-        host_info[vuln_code]['cvss_score'] = float(row[10])
-        host_info[vuln_code]['cve_list'] = str(row[11]).strip().split()
-        host_info[vuln_code]['version_based'] = check_boolean(str(row[12]).strip())
-        host_info[vuln_code]['evidence'] = str(row[13])
+        if not mst:
+            host_info[vuln_code]['hosts_list'] = str(row[4]).replace(' ', '').split(',')
+            host_info[vuln_code]['protocol_list'] = str(row[5]).replace(' ', '').split(',')
+            host_info[vuln_code]['port_list'] = str(row[6]).replace(' ', '').split(',')
+            host_info[vuln_code]['service_list'] = str(row[7]).strip().split()
+            host_info[vuln_code]['vuln_name'] = str(row[9])
+            host_info[vuln_code]['cvss_score'] = float(row[10])
+            host_info[vuln_code]['cve_list'] = str(row[11]).strip().split()
+            host_info[vuln_code]['version_based'] = check_boolean(str(row[12]).strip())
+            host_info[vuln_code]['evidence'] = str(row[13])
+        else:
+        # ID,Risk,Name,Location,Description,Evidence
+            host_info[vuln_code]['hosts_list'] = str(row[7]).strip().split()
+            host_info[vuln_code]['protocol_list'] = str(row[5]).replace(' ', '').split(',')
+            host_info[vuln_code]['port_list'] = ''
+            host_info[vuln_code]['service_list'] = None
+            host_info[vuln_code]['vuln_name'] = str(row[6])
+            host_info[vuln_code]['cvss_score'] = 5.0
+            host_info[vuln_code]['cve_list'] = ''
+            #import ipdb; ipdb.set_trace() # Debug Here!
+            host_info[vuln_code]['version_based'] = True if 'version-based' in host_info[vuln_code]['tags_list'] else False
+            host_info[vuln_code]['evidence'] = str(row[9])
+            host_info[vuln_code]['notes_list'].append(row[8])
 
     return host_info
 
@@ -118,9 +137,9 @@ def cve_search(all_items_cve, cve_id):
     return all_items_cve[cve_id]['description'], urls
 
 
-def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
+def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False):
     report = open('./report.txt', 'w')
-    host_info = carrier_parser(sorted_findings)
+    host_info = carrier_parser(sorted_findings, mst)
     total = len(host_info)
     remaining = 0
     for vuln_code, info in host_info.iteritems():
@@ -141,6 +160,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold):
             if len(cve_list) >= 3:
                 cve_list = random.sample(info['cve_list'], 3)
 
+            description, references = (None, None)
             for cve in cve_list:
                 output += "CVE: %s%s%s\n" % (b.WARNING, cve, b.ENDC)
                 description, references = cve_search(all_items_cve, cve)
@@ -191,4 +211,5 @@ if __name__ == '__main__':
 
     # Set default cvss_treshold to 5
     cvss_treshold = sys.argv[2] if len(sys.argv) > 2 else 5
-    manual_check_helper(all_items_cve, sys.argv[1], cvss_treshold)
+    mst = True if len(sys.argv) > 3 and sys.argv[3].upper() == 'MST' else False # CarrierCLI|MST
+    manual_check_helper(all_items_cve, sys.argv[1], cvss_treshold, mst)
