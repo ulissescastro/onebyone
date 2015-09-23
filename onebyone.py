@@ -168,16 +168,17 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False
                 description, references = cve_search(all_items_cve, cve)
                 output += "%s\n" % description
 
-            output += "\n"
-            for host in info['hosts_list']:
-                output += "HOST: %s%s%s\n" % (b.BOLD, host, b.ENDC)
-                for port in info['port_list']:
-                    if port:
-                        print "%s%s %s%s" % (b.WARNING, host, port, b.ENDC)
-                        if check_port(host, port):
-                            output += "\t[%sOK%s] %s:%s\n" % (b.OKGREEN, b.ENDC, host, port)
-                        else:
-                            output += "\t[%sFAIL%s] %s:%s\n" % (b.FAIL, b.ENDC, host, port)
+            if not mst:
+                output += "\n"
+                for host in info['hosts_list']:
+                    output += "HOST: %s%s%s\n" % (b.BOLD, host, b.ENDC)
+                    for port in info['port_list']:
+                        if port:
+                            print "%s%s %s%s" % (b.WARNING, host, port, b.ENDC)
+                            if check_port(host, port):
+                                output += "\t[%sOK%s] %s:%s\n" % (b.OKGREEN, b.ENDC, host, port)
+                            else:
+                                output += "\t[%sFAIL%s] %s:%s\n" % (b.FAIL, b.ENDC, host, port)
 
             if info['evidence']:
                 output += "\nEVIDENCE(s):\n%s\n" % info['evidence'].replace('; ', '\n')
