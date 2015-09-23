@@ -207,11 +207,10 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False
     return
 
 if __name__ == '__main__':
-    all_items_cve = cve_parser('./cve/allitems.csv')
-    # pprint(all_items_cve)
-    # sys.exit(0)
-
     # Set default cvss_treshold to 5
     cvss_treshold = sys.argv[2] if len(sys.argv) > 2 else 5
     mst = True if len(sys.argv) > 3 and sys.argv[3].upper() == 'MST' else False # CarrierCLI|MST
+
+    # Disable CVE parser for MST CSVs.
+    all_items_cve = cve_parser('./cve/allitems.csv') if not mst else None
     manual_check_helper(all_items_cve, sys.argv[1], cvss_treshold, mst)
