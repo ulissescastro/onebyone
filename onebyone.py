@@ -103,7 +103,8 @@ def carrier_parser(csv_file, mst=False):
             host_info[vuln_code]['evidence'] = str(row[13])
         else:
         # ID,Risk,Name,Location,Description,Evidence
-            host_info[vuln_code]['hosts_list'] = str(row[7]).strip().split()
+            #import ipdb; ipdb.set_trace() # Debug Here!
+            host_info[vuln_code]['hosts_list'] = str(row[7]).replace(' ', '').split(',')
             host_info[vuln_code]['protocol_list'] = str(row[5]).replace(' ', '').split(',')
             host_info[vuln_code]['port_list'] = ''
             host_info[vuln_code]['service_list'] = None
@@ -142,7 +143,6 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False
     host_info = carrier_parser(sorted_findings, mst)
     total = len(host_info)
     remaining = 0
-    #import ipdb; ipdb.set_trace() # Debug Here!
     for vuln_code, info in host_info.iteritems():
         if info['cvss_score'] >= float(cvss_treshold):
             remaining += 1
