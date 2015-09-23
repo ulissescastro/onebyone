@@ -103,7 +103,6 @@ def carrier_parser(csv_file, mst=False):
             host_info[vuln_code]['evidence'] = str(row[13])
         else:
         # ID,Risk,Name,Location,Description,Evidence
-            #import ipdb; ipdb.set_trace() # Debug Here!
             host_info[vuln_code]['hosts_list'] = str(row[7]).replace(' ', '').split(',')
             host_info[vuln_code]['protocol_list'] = str(row[5]).replace(' ', '').split(',')
             host_info[vuln_code]['port_list'] = ''
@@ -181,7 +180,11 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False
                                 output += "\t[%sFAIL%s] %s:%s\n" % (b.FAIL, b.ENDC, host, port)
 
             if info['evidence']:
-                output += "\nEVIDENCE(s):\n%s\n" % info['evidence'].replace('; ', '\n')
+                #import ipdb; ipdb.set_trace() # Debug Here!
+                if len(info['evidence']) > 2000:
+                    output += "\nEVIDENCE(s):\n%s ...\n" % info['evidence'][:1996].replace('; ', '\n')
+                else:
+                    output += "\nEVIDENCE(s):\n%s\n" % info['evidence'].replace('; ', '\n')
 
             if references:
                 output += "\nREFERENCE(s):\n%s\n" % references
