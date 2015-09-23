@@ -149,7 +149,7 @@ def manual_check_helper(all_items_cve, sorted_findings, cvss_treshold, mst=False
 
     for vuln_code, info in host_info.iteritems():
         if info['cvss_score'] >= float(cvss_treshold):
-            hosts = list_to_str(str(info['hosts_list']))
+            hosts = ', '.join(info['hosts_list'])
             services = list_to_str(str(info['service_list']))
             output = "REMAINING: %s%s/%s%s    " % (b.BOLD, remaining, total, b.ENDC)
             output += "CODE: %s%s%s   " % (b.BOLD, vuln_code, b.ENDC)
